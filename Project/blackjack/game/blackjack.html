@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack Oyunu</title>
+    <link rel="stylesheet" href="./assets/css/blackjack.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="dealer-area">
+            <h2>Kurpiye</h2>
+            <div id="dealer-cards" class="cards"></div>
+            <div id="dealer-score" class="score">Toplam: 0</div>
+        </div>
+
+        <div class="player-area">
+            <h2>Oyuncu</h2>
+            <div id="player-cards" class="cards"></div>
+            <div id="player-score" class="score">Toplam: 0</div>
+        </div>
+
+        <div class="controls">
+            <button id="deal-btn">Dağıt</button>
+            <button id="hit-btn" disabled>Kart Çek</button>
+            <button id="stand-btn" disabled>Kal</button>
+        </div>
+
+        <div class="game-status">
+            <div id="message"></div>
+            <div class="balance">Bakiye: $<span id="money">1000</span></div>
+            <div class="bet-area">
+                <input type="number" id="bet-amount" min="10" max="1000" value="10">
+                <button id="place-bet">Bahis Koy</button>
+            </div>
+        </div>
+    </div>
+    <script src="./assets/js/blackjack.js"></script>
+</body>
+</html>
