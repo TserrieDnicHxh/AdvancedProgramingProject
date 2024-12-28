@@ -3,7 +3,7 @@ class Blackjack {
         this.deck = [];
         this.dealerCards = [];
         this.playerCards = [];
-        this.suits = ['H', 'D', 'C', 'S']; 
+        this.suits = ['H', 'D', 'C', 'S'];
         this.values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
         this.money = 1000;
         this.currentBet = 0;
@@ -63,6 +63,7 @@ class Blackjack {
 
         return score;
     }
+
     getCardImagePath(card) {
         let suitName;
         let valueName;
@@ -72,7 +73,7 @@ class Blackjack {
             case 'D': suitName = 'diamonds'; break;
             case 'C': suitName = 'clubs'; break;
             case 'S': suitName = 'spades'; break;
-            default: suitName = ''; 
+            default: suitName = '';
         }
     
         switch (card.value) {
@@ -83,13 +84,6 @@ class Blackjack {
             default: valueName = card.value;
         }
     
-        if (card.value === 'BLACK_JOKER') {
-            return `assets/cards/black_joker.png`;
-        }
-        if (card.value === 'RED_JOKER') {
-            return `assets/cards/red_joker.png`;
-        }
-    
         return `assets/cards/${valueName}_of_${suitName}.png`;
     }
 
@@ -97,12 +91,16 @@ class Blackjack {
         const element = document.getElementById(elementId);
         element.innerHTML = '';
         
-        cards.forEach(card => {
+        cards.forEach((card, index) => {
             const cardDiv = document.createElement('div');
             cardDiv.classList.add('card');
             
             const cardImage = document.createElement('img');
-            cardImage.src = this.getCardImagePath(card);
+            if (elementId === 'dealer-cards' && index === 1 && this.gameActive) {
+                cardImage.src = 'assets/cards/card_back_purple.png';
+            } else {
+                cardImage.src = this.getCardImagePath(card);
+            }
             cardImage.alt = `${card.value}${card.suit}`;
             cardImage.style.width = '100%';
             cardImage.style.height = '100%';
@@ -111,6 +109,22 @@ class Blackjack {
             cardDiv.appendChild(cardImage);
             element.appendChild(cardDiv);
         });
+    }
+
+    updateScores() {
+        const playerScore = this.calculateScore(this.playerCards);
+        const dealerScore = this.calculateScore(this.dealerCards);
+        
+        document.getElementById('player-score').textContent = `Player Score: ${playerScore}`;
+        if (this.gameActive) {
+            document.getElementById('dealer-score').textContent = `Dealer Score: ${this.getCardValue(this.dealerCards[0])}`;
+        } else {
+            document.getElementById('dealer-score').textContent = `Dealer Score: ${dealerScore}`;
+        }
+    }
+
+    updateMoney() {
+        document.getElementById('money').textContent = `Balance: $${this.money}`;
     }
 
     placeBet() {
@@ -136,14 +150,13 @@ class Blackjack {
         }
 
         this.createDeck();
-        this.dealerCards = [this.drawCard()];
+        this.dealerCards = [this.drawCard(), this.drawCard()];
         this.playerCards = [this.drawCard(), this.drawCard()];
         
+        this.gameActive = true;
         this.updateCardDisplay(this.dealerCards, 'dealer-cards');
         this.updateCardDisplay(this.playerCards, 'player-cards');
-        
         this.updateScores();
-        this.gameActive = true;
         
         document.getElementById('hit-btn').disabled = false;
         document.getElementById('stand-btn').disabled = false;
@@ -168,21 +181,24 @@ class Blackjack {
 
     stand() {
         if (!this.gameActive) return;
+
+        this.gameActive = false;
+        this.updateCardDisplay(this.dealerCards, 'dealer-cards');
+        this.updateScores();
         
         while (this.calculateScore(this.dealerCards) < 17) {
             this.dealerCards.push(this.drawCard());
+            this.updateCardDisplay(this.dealerCards, 'dealer-cards');
+            this.updateScores();
         }
-        
-        this.updateCardDisplay(this.dealerCards, 'dealer-cards');
-        this.updateScores();
         
         const dealerScore = this.calculateScore(this.dealerCards);
         const playerScore = this.calculateScore(this.playerCards);
         
         if (dealerScore > 21) {
-            this.endGame('Kazandınız! Kurpiye 21\'i geçti!', true);
+            this.endGame('Kazandınız! Kurpiyer 21\'i geçti!', true);
         } else if (dealerScore > playerScore) {
-            this.endGame('Kaybettiniz! Kurpiye kazandı.');
+            this.endGame('Kaybettiniz! Kurpiyer kazandı.');
         } else if (dealerScore < playerScore) {
             this.endGame('Kazandınız!', true);
         } else {
@@ -190,16 +206,7 @@ class Blackjack {
         }
     }
 
-    updateScores() {
-        document.getElementById('dealer-score').textContent = `Toplam: ${this.calculateScore(this.dealerCards)}`;
-        document.getElementById('player-score').textContent = `Toplam: ${this.calculateScore(this.playerCards)}`;
-    }
-
-    updateMoney() {
-        document.getElementById('money').textContent = this.money;
-    }
-
-    endGame(message, playerWon = false) {
+    endGame(message, isWin = false) {
         this.gameActive = false;
         document.getElementById('message').textContent = message;
         document.getElementById('hit-btn').disabled = true;
@@ -208,18 +215,16 @@ class Blackjack {
         document.getElementById('place-bet').disabled = false;
         document.getElementById('bet-amount').disabled = false;
 
-        if (playerWon === true) {
+        if (isWin === true) {
             this.money += this.currentBet * 2;
-        } else if (playerWon === 'draw') {
+        } else if (isWin === 'draw') {
             this.money += this.currentBet;
         }
         
-        this.currentBet = 0;
         this.updateMoney();
+        this.currentBet = 0;
     }
 }
 
-// Oyunu başlat
-window.onload = () => {
-    new Blackjack();
-};
+// Initialize game
+const game = new Blackjack();
