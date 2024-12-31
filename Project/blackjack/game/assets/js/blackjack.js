@@ -130,11 +130,11 @@ class Blackjack {
     placeBet() {
         const betAmount = parseInt(document.getElementById('bet-amount').value);
         if (betAmount > this.money) {
-            alert('Yetersiz bakiye!');
+            alert('Insufficient balance!');
             return;
         }
         if (betAmount < 10) {
-            alert('Minimum bahis 10$!');
+            alert('Minimum bet is $10!');
             return;
         }
         this.currentBet = betAmount;
@@ -145,7 +145,7 @@ class Blackjack {
 
     startNewGame() {
         if (this.currentBet === 0) {
-            alert('Önce bahis koymalısınız!');
+            alert('Please place a bet!');
             return;
         }
 
@@ -175,7 +175,7 @@ class Blackjack {
         this.updateScores();
         
         if (this.calculateScore(this.playerCards) > 21) {
-            this.endGame('Kaybettiniz! 21\'i geçtiniz.');
+            this.endGame('You busted! Dealer wins.');
         }
     }
 
@@ -186,24 +186,29 @@ class Blackjack {
         this.updateCardDisplay(this.dealerCards, 'dealer-cards');
         this.updateScores();
         
-        while (this.calculateScore(this.dealerCards) < 17) {
-            this.dealerCards.push(this.drawCard());
-            this.updateCardDisplay(this.dealerCards, 'dealer-cards');
-            this.updateScores();
-        }
-        
-        const dealerScore = this.calculateScore(this.dealerCards);
-        const playerScore = this.calculateScore(this.playerCards);
-        
-        if (dealerScore > 21) {
-            this.endGame('Kazandınız! Kurpiyer 21\'i geçti!', true);
-        } else if (dealerScore > playerScore) {
-            this.endGame('Kaybettiniz! Kurpiyer kazandı.');
-        } else if (dealerScore < playerScore) {
-            this.endGame('Kazandınız!', true);
-        } else {
-            this.endGame('Berabere!', 'draw');
-        }
+        const dealerPlay = async () => {
+            while (this.calculateScore(this.dealerCards) < 17) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                this.dealerCards.push(this.drawCard());
+                this.updateCardDisplay(this.dealerCards, 'dealer-cards');
+                this.updateScores();
+            }
+            
+            const dealerScore = this.calculateScore(this.dealerCards);
+            const playerScore = this.calculateScore(this.playerCards);
+            
+            if (dealerScore > 21) {
+                this.endGame('You win! Dealer busted.', true);
+            } else if (dealerScore > playerScore) {
+                this.endGame('Dealer wins!', false);
+            } else if (dealerScore < playerScore) {
+                this.endGame('You win!', true);
+            } else {
+                this.endGame('It\'s a draw!', 'draw');
+            }
+        };
+
+        dealerPlay();
     }
 
     endGame(message, isWin = false) {
